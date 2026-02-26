@@ -8,3 +8,8 @@ A general web based platform to help researcher have a overview about data expor
 
 # Technology Stack
 - React Vite
+
+# UI Design
+- Equipment selection: name and image of the equipment
+- Modern white background and elegent design, with a focus on simplicity and ease of use.
+- Data visualization: allow user to select data range, units, and other parameters to customize the visualization, and support multiple visualization types, such as line chart, bar chart, scatter plot, etc. This should be based on data type, which means plugin specific.
