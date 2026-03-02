@@ -145,17 +145,24 @@ export default function App() {
   }, []);
 
   const handleDeviceSelect = useCallback((plugin: MeasurePlugin) => {
-    let tabId = activeNewTabIdRef.current;
-    if (!tabId) {
-      // No active new tab (e.g. landing page) — create one
+    let newId: string | null = null;
+    setNewTabs((prev) => {
+      const tabId = activeNewTabIdRef.current;
+      if (tabId && prev.some((nt) => nt.id === tabId)) {
+        return prev.map((nt) =>
+          nt.id === tabId ? { ...nt, phase: 'upload' as const, plugin } : nt,
+        );
+      }
+      // Tab not found or no active new tab — create one
       const id = `${NEW_TAB_PREFIX}${nextNewTabId++}`;
-      setNewTabs((prev) => [...prev, { id, phase: 'upload', plugin }]);
-      setActivePluginId(id);
       activeNewTabIdRef.current = id;
-      return;
+      newId = id;
+      return [...prev, { id, phase: 'upload' as const, plugin }];
+    });
+    if (newId) {
+      setActivePluginId(newId);
     }
-    updateNewTab(tabId, { phase: 'upload', plugin });
-  }, [updateNewTab]);
+  }, []);
 
   const handleDataParsed = useCallback((data: ParsedData, plugin: MeasurePlugin, filename: string) => {
     const id = String(nextId++);

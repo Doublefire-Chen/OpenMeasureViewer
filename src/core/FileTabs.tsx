@@ -18,7 +18,7 @@ export default function FileTabs({ groups, activePluginId, onSwitch, onAdd, onCl
   const items = groups.map((g) => ({
     key: g.pluginId,
     label: g.pluginLabel,
-    closable: true,
+    closable: groups.length > 1,
   }));
 
   const tabStyle = `
