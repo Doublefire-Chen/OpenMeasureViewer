@@ -381,6 +381,7 @@ export default function App() {
                       controls={tabState.chartControls}
                       data={activeFile.data}
                       onChange={handleChartControlsChange}
+                      hideMarkLines={activeFile.plugin.customChartLines}
                     />
                   </DataViewer>
                 </div>

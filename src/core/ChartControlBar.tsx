@@ -11,9 +11,11 @@ interface ChartControlBarProps {
   controls: ChartControls;
   data: ParsedData;
   onChange: (controls: ChartControls) => void;
+  hideMarkLines?: boolean;
+  displayTitle?: string;
 }
 
-export default function ChartControlBar({ controls, data, onChange }: ChartControlBarProps) {
+export default function ChartControlBar({ controls, data, onChange, hideMarkLines, displayTitle }: ChartControlBarProps) {
   const { dataPoints } = data;
   const timeMin = dataPoints.length > 0 ? dataPoints[0].timestamp.getTime() : 0;
   const timeMax = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].timestamp.getTime() : 0;
@@ -50,9 +52,6 @@ export default function ChartControlBar({ controls, data, onChange }: ChartContr
     onChange({ ...controls, timeRange: [start, clamped] });
   };
 
-  const channel = data.channels[0];
-  const defaultTitle = channel ? `${channel.name} (${channel.unit})` : '';
-
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', padding: '12px 16px', background: '#fafafa', borderRadius: 6 }}>
       <Space size="small" align="center">
@@ -60,7 +59,7 @@ export default function ChartControlBar({ controls, data, onChange }: ChartContr
         <Input
           size="small"
           style={{ width: 260 }}
-          placeholder={defaultTitle}
+          placeholder={displayTitle || 'Custom chart title'}
           defaultValue={controls.chartTitle}
           key={`title-${controls.chartTitle}`}
           onPressEnter={(e) => onChange({ ...controls, chartTitle: e.currentTarget.value })}
@@ -160,27 +159,29 @@ export default function ChartControlBar({ controls, data, onChange }: ChartContr
         )}
       </Space>
 
-      <Space size="small" align="center">
-        <span style={{ fontWeight: 500 }}>Lines:</span>
-        <Checkbox
-          checked={controls.markLines.max}
-          onChange={(e) => onChange({ ...controls, markLines: { ...controls.markLines, max: e.target.checked } })}
-        >
-          Max
-        </Checkbox>
-        <Checkbox
-          checked={controls.markLines.min}
-          onChange={(e) => onChange({ ...controls, markLines: { ...controls.markLines, min: e.target.checked } })}
-        >
-          Min
-        </Checkbox>
-        <Checkbox
-          checked={controls.markLines.avg}
-          onChange={(e) => onChange({ ...controls, markLines: { ...controls.markLines, avg: e.target.checked } })}
-        >
-          Avg
-        </Checkbox>
-      </Space>
+      {!hideMarkLines && (
+        <Space size="small" align="center">
+          <span style={{ fontWeight: 500 }}>Lines:</span>
+          <Checkbox
+            checked={controls.markLines.max}
+            onChange={(e) => onChange({ ...controls, markLines: { ...controls.markLines, max: e.target.checked } })}
+          >
+            Max
+          </Checkbox>
+          <Checkbox
+            checked={controls.markLines.min}
+            onChange={(e) => onChange({ ...controls, markLines: { ...controls.markLines, min: e.target.checked } })}
+          >
+            Min
+          </Checkbox>
+          <Checkbox
+            checked={controls.markLines.avg}
+            onChange={(e) => onChange({ ...controls, markLines: { ...controls.markLines, avg: e.target.checked } })}
+          >
+            Avg
+          </Checkbox>
+        </Space>
+      )}
     </div>
   );
 }

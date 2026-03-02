@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 import { Card, Descriptions, Image, Tag } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import type { ViewerProps } from '../../core/types';
@@ -175,7 +175,11 @@ export default function Viewer({ data, chartControls, children }: ViewerProps) {
         </div>
       </Card>
 
-      {children}
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child as React.ReactElement<{ displayTitle?: string }>, { displayTitle })
+          : child,
+      )}
 
       <Card size="small">
         <div style={{ display: 'flex', gap: 16, marginBottom: 8 }}>

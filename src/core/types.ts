@@ -57,6 +57,7 @@ export interface MeasurePlugin {
   brand: string;
   type: string;
   imagePath?: string;
+  customChartLines?: boolean;
   canParse: (file: File) => Promise<boolean>;
   parse: (file: File) => Promise<ParsedData>;
   Viewer: React.ComponentType<ViewerProps>;
