@@ -58,9 +58,16 @@ function initState() {
     const validActive = activePluginId && pluginStates[activePluginId]
       ? activePluginId
       : files[0].plugin.id;
-    return { files, activePluginId: validActive, pluginStates };
+    return { files, activePluginId: validActive, pluginStates, initialNewTabs: [] as NewTabState[] };
   }
-  return { files: [], activePluginId: null as string | null, pluginStates: {} as Record<string, PluginTabState> };
+  // No cached files — start with an initial empty tab
+  const initialTabId = `${NEW_TAB_PREFIX}${nextNewTabId++}`;
+  return {
+    files: [],
+    activePluginId: initialTabId,
+    pluginStates: {} as Record<string, PluginTabState>,
+    initialNewTabs: [{ id: initialTabId, phase: 'device' as const, plugin: null }],
+  };
 }
 
 export default function App() {
@@ -68,8 +75,18 @@ export default function App() {
   const [files, setFiles] = useState<FileEntry[]>(initial.files);
   const [activePluginId, setActivePluginId] = useState<string | null>(initial.activePluginId);
   const [pluginStates, setPluginStates] = useState<Record<string, PluginTabState>>(initial.pluginStates);
-  const [newTabs, setNewTabs] = useState<NewTabState[]>([]);
-  const activeNewTabIdRef = useRef<string | null>(null);
+  const [newTabs, setNewTabs] = useState<NewTabState[]>(initial.initialNewTabs ?? []);
+  const activeNewTabIdRef = useRef<string | null>(
+    initial.initialNewTabs.length > 0 ? initial.initialNewTabs[0].id : null,
+  );
+
+  /** Create a fresh empty "New" tab and activate it. */
+  const spawnEmptyTab = useCallback(() => {
+    const id = `${NEW_TAB_PREFIX}${nextNewTabId++}`;
+    setNewTabs((prev) => [...prev, { id, phase: 'device', plugin: null }]);
+    setActivePluginId(id);
+    activeNewTabIdRef.current = id;
+  }, []);
 
   useEffect(() => {
     saveFiles(files, activePluginId);
@@ -128,10 +145,16 @@ export default function App() {
   }, []);
 
   const handleDeviceSelect = useCallback((plugin: MeasurePlugin) => {
-    const tabId = activeNewTabIdRef.current;
-    if (tabId) {
-      updateNewTab(tabId, { phase: 'upload', plugin });
+    let tabId = activeNewTabIdRef.current;
+    if (!tabId) {
+      // No active new tab (e.g. landing page) — create one
+      const id = `${NEW_TAB_PREFIX}${nextNewTabId++}`;
+      setNewTabs((prev) => [...prev, { id, phase: 'upload', plugin }]);
+      setActivePluginId(id);
+      activeNewTabIdRef.current = id;
+      return;
     }
+    updateNewTab(tabId, { phase: 'upload', plugin });
   }, [updateNewTab]);
 
   const handleDataParsed = useCallback((data: ParsedData, plugin: MeasurePlugin, filename: string) => {
@@ -187,14 +210,13 @@ export default function App() {
         if (otherPlugins.length > 0) {
           setActivePluginId(otherPlugins[0]);
         } else {
-          setActivePluginId(null);
-          setNewTabs([]);
+          spawnEmptyTab();
         }
       }
 
       return updated;
     });
-  }, [activePluginId]);
+  }, [activePluginId, spawnEmptyTab]);
 
   const handleChartControlsChange = useCallback((controls: ChartControls) => {
     if (!activePluginId) return;
@@ -216,8 +238,9 @@ export default function App() {
             setActivePluginId(firstPlugin.pluginId);
           } else if (updated.length > 0) {
             setActivePluginId(updated[updated.length - 1].id);
-          } else {
-            setActivePluginId(null);
+          } else if (pluginGroups.length === 0) {
+            spawnEmptyTab();
+            return updated;   // spawnEmptyTab already adds a tab
           }
         }
         return updated;
@@ -239,12 +262,12 @@ export default function App() {
         } else if (newTabs.length > 0) {
           setActivePluginId(newTabs[newTabs.length - 1].id);
         } else {
-          setActivePluginId(null);
+          spawnEmptyTab();
         }
       }
       return updated;
     });
-  }, [activePluginId, pluginGroups, newTabs]);
+  }, [activePluginId, pluginGroups, newTabs, spawnEmptyTab]);
 
   const handleAddTab = useCallback(() => {
     const id = `${NEW_TAB_PREFIX}${nextNewTabId++}`;
@@ -255,10 +278,10 @@ export default function App() {
   const handleClearCache = useCallback(() => {
     clearCache();
     setFiles([]);
-    setActivePluginId(null);
     setPluginStates({});
     setNewTabs([]);
-  }, []);
+    spawnEmptyTab();
+  }, [spawnEmptyTab]);
 
   const handleChangeDevice = useCallback(() => {
     const tabId = activeNewTabIdRef.current;
@@ -311,15 +334,13 @@ export default function App() {
           </div>
         ) : (
           <>
-            {hasFiles && (
-              <FileTabs
-                groups={tabGroups}
-                activePluginId={activePluginId}
-                onSwitch={handlePluginSwitch}
-                onAdd={handleAddTab}
-                onClose={handleCloseTab}
-              />
-            )}
+            <FileTabs
+              groups={tabGroups}
+              activePluginId={activePluginId}
+              onSwitch={handlePluginSwitch}
+              onAdd={handleAddTab}
+              onClose={handleCloseTab}
+            />
             {isNewTabActive && activeNewTab.phase === 'device' && (
               <div style={{ marginTop: 16 }}>
                 <DeviceSelector onSelect={handleDeviceSelect} />
