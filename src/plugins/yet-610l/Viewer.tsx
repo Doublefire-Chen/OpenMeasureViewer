@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Card, Descriptions, Image, Tag } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import type { ViewerProps } from '../../core/types';
+import deviceImage from './YET-610L.png';
 
 function trimDuration(s: string): string {
   // "00d 20h 00m 15s" → "20h 00m 15s", "00h 00m 05s" → "05s"
@@ -166,7 +167,7 @@ export default function Viewer({ data, chartControls, children }: ViewerProps) {
           </div>
           <div style={{ flex: '0 0 calc(34% - 24px)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Image
-              src="/images/YET-610L.png"
+              src={deviceImage}
               alt="YET-610L Thermometer"
               style={{ maxHeight: 200, maxWidth: '100%', objectFit: 'contain' }}
               preview={false}

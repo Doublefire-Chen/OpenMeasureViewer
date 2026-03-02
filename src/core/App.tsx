@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Layout, Typography, Popconfirm } from 'antd';
-import { ExperimentOutlined, DeleteOutlined, GithubOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, DeleteOutlined, DownloadOutlined, GithubOutlined } from '@ant-design/icons';
 import DeviceSelector from './DeviceSelector';
 import FileUploader from './FileUploader';
 import DataViewer from './DataViewer';
@@ -306,6 +306,16 @@ export default function App() {
           onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)')}
         >
           <GithubOutlined />
+        </a>
+        <a
+          href="./OpenMeasureViewer.zip"
+          download
+          style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)')}
+        >
+          <DownloadOutlined style={{ marginRight: 4 }} />
+          Download
         </a>
         {hasFiles && (
           <Popconfirm

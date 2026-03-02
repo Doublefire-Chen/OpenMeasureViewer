@@ -4,6 +4,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import * as XLSX from 'xlsx';
 import type { ViewerProps } from '../../core/types';
+import deviceImage from './X-AM_8000.png';
 
 interface Thresholds {
   [gas: string]: { a1: number; a2: number };
@@ -313,7 +314,7 @@ export default function Viewer({ data, chartControls, children }: ViewerProps) {
           </div>
           <div style={{ flex: '0 0 calc(34% - 24px)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Image
-              src="/images/X-AM_8000.png"
+              src={deviceImage}
               alt="Dräger X-AM 8000"
               style={{ maxHeight: 200, maxWidth: '100%', objectFit: 'contain' }}
               preview={false}
